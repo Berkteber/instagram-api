@@ -1,61 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const ACCESS_TOKEN = 'EAAQIZAsEDpooBOwg4hGNBo04uYmY2OLAbnrJl5HuqSbE4odORHX2GU2VJO0gmAK4EWZBB8jq6I9Ka3EYeXwNp5lTkDEDM8yWA2yKOCXSwHrp8frZBIk6PNliawcqqspqAiPX5WeZBAfoqy2J6sAN5dOK7JD5g6436JZA675SQI8JzbpwD2XZBhyfpenCP4FoPZAfg2KZBU4AASb6ZBZAKkeCSiICgZBu0nke3uLv64ZD';
+const ACCESS_TOKEN = 'EAAQIZAsEDpooBO7JjQz2UqHMml8ZARw2WeJ039NvlbiSrLdDkkW9lmzgTsZALyuZC9KAVp4kXnKboNNILN6lHZAM5II3KsZB3pZAhrA1tQcMstmUZBM6S8n7vbskFzJIsezkZCEAiY9z3bZAapk4gvaAScrESIrwtnCALKC6hfIlNmhLOuImZBKR7qRY8uh9og1YHHdNTqVdmR7ewLxoVmuLhmNKL30owZDZD';
 const IG_USER_ID = '17841460045847884';
 const BASE_URL = 'https://graph.facebook.com/v22.0';
 
-const AggregatedMetrics = () => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [insights, setInsights] = useState(null);
-  const [media, setMedia] = useState(null);
+const MediaData = () => {
+  const [mediaData, setMediaData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Kullanıcı bilgilerini çek
-    const fetchUserInfo = async () => {
-      const response = await axios.get(`${BASE_URL}/${IG_USER_ID}`, {
-        params: {
-          fields: 'username,followers_count',
-          access_token: ACCESS_TOKEN
-        }
-      });
-      setUserInfo(response.data);
-    };
+    const fetchMediaData = async () => {
+      try {
+        // 1️⃣ İlk olarak, medya ID'lerini çekiyoruz
+        const response = await axios.get(`${BASE_URL}/${IG_USER_ID}`, {
+          params: {
+            fields:
+              'media.limit(10){id,caption,media_type,media_url,permalink,timestamp,username,comments_count,like_count}',
+            access_token: ACCESS_TOKEN,
+          },
+        });
 
-    // Insights verilerini çek
-    const fetchInsights = async () => {
-      const response = await axios.get(`${BASE_URL}/${IG_USER_ID}/insights`, {
-        params: {
-          metric: 'impressions,reach,profile_views',
-          period: 'day',
-          access_token: ACCESS_TOKEN
-        }
-      });
-      setInsights(response.data);
-    };
+        const mediaItems = response.data.media.data;
 
-    // Son 10 gönderinin detaylarını çekmek için /media edge'ini kullan
-    const fetchMedia = async () => {
-      const response = await axios.get(`${BASE_URL}/${IG_USER_ID}/media`, {
-        params: {
-          fields: 'id,caption,media_type,media_url,permalink,timestamp,comments_count,like_count',
-          limit: 10,
-          access_token: ACCESS_TOKEN
-        }
-      });
-      setMedia(response.data);
-    };
+        // 2️⃣ Her gönderi için `reach` metriğini almak için API çağrıları oluşturuyoruz
+        const reachRequests = mediaItems.map((media) =>
+          axios.get(`${BASE_URL}/${media.id}/insights`, {
+            params: {
+              metric: 'reach',
+              period: 'day',
+              access_token: ACCESS_TOKEN,
+            },
+          })
+        );
 
-    // Tüm istekleri paralel olarak gerçekleştirip, sonuçları bekliyoruz.
-    Promise.all([fetchUserInfo(), fetchInsights(), fetchMedia()])
-      .then(() => setLoading(false))
-      .catch((err) => {
-        console.error('API isteği sırasında hata:', err.response ? err.response.data : err.message);
+        // 3️⃣ Tüm API çağrılarını aynı anda çalıştırıyoruz
+        const reachResponses = await Promise.all(reachRequests);
+
+        // 4️⃣ Her medya öğesine `reach` verisini ekliyoruz
+        const updatedMediaItems = mediaItems.map((media, index) => ({
+          ...media,
+          reach: reachResponses[index].data.data[0]?.values[0]?.value || 0, // Eğer veri yoksa 0 göster
+        }));
+
+        setMediaData(updatedMediaItems);
+        setLoading(false);
+      } catch (err) {
+        console.error(
+          'API isteği sırasında hata:',
+          err.response ? err.response.data : err.message
+        );
         setError(err);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchMediaData();
   }, []);
 
   if (loading) return <div>Yükleniyor...</div>;
@@ -63,59 +64,26 @@ const AggregatedMetrics = () => {
 
   return (
     <div>
-      <h2>Toplu Performans Verileri</h2>
-
-      <section>
-        <h3>Kullanıcı Bilgileri</h3>
-        {userInfo ? (
-          <>
-            <p><strong>Kullanıcı Adı:</strong> {userInfo.username}</p>
-            <p><strong>Takipçi Sayısı:</strong> {userInfo.followers_count}</p>
-          </>
-        ) : (
-          <p>Kullanıcı bilgisi bulunamadı.</p>
-        )}
-      </section>
-
-      <section>
-        <h3>Insights Verileri</h3>
-        {insights && insights.data ? (
-          insights.data.map((metric) => (
-            <div key={metric.name}>
-              <p>
-                <strong>{metric.name}</strong>: {JSON.stringify(metric.values)}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p>Insights verisi bulunamadı.</p>
-        )}
-      </section>
-
-      <section>
-        <h3>Son 10 Gönderi</h3>
-        {media && media.data ? (
-          media.data.map((post) => (
-            <div key={post.id} style={{ border: '1px solid #ccc', marginBottom: '10px', padding: '10px' }}>
-              <p><strong>Gönderi ID:</strong> {post.id}</p>
-              <p><strong>Açıklama:</strong> {post.caption || 'Yok'}</p>
-              <p><strong>Yorum Sayısı:</strong> {post.comments_count}</p>
-              <p><strong>Beğeni Sayısı:</strong> {post.like_count}</p>
-              <p>
-                <strong>Medya URL:</strong>{' '}
-                <a href={post.media_url} target="_blank" rel="noopener noreferrer">
-                  {post.media_url}
-                </a>
-              </p>
-              <p><strong>Zaman Damgası:</strong> {post.timestamp}</p>
-            </div>
-          ))
-        ) : (
-          <p>Gönderi verisi bulunamadı.</p>
-        )}
-      </section>
+      <h1>📸 Instagram Gönderileri</h1>
+      {mediaData.map((media) => (
+        <div key={media.id} style={{ border: '1px solid #ccc', padding: '10px', margin: '10px' }}>
+          <h3>{media.caption || 'Başlık Yok'}</h3>
+          {media.media_type === 'IMAGE' && <img src={media.media_url} alt="Gönderi" width="300" />}
+          {media.media_type === 'VIDEO' && (
+            <video width="300" controls>
+              <source src={media.media_url} type="video/mp4" />
+            </video>
+          )}
+          <p>💬 Yorumlar: {media.comments_count}</p>
+          <p>❤️ Beğeniler: {media.like_count}</p>
+          <p>👀 Görülme Sayısı (Reach): {media.reach}</p>
+          <a href={media.permalink} target="_blank" rel="noopener noreferrer">
+            Gönderiyi Görüntüle
+          </a>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default AggregatedMetrics;
+export default MediaData;
