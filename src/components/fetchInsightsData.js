@@ -6,7 +6,7 @@ const InstagramInsights = () => {
   const [dailyFollowers, setDailyFollowers] = useState(null);
   const [error, setError] = useState(null);
 
-  const accessToken = 'EAAQIZAsEDpooBO7JjQz2UqHMml8ZARw2WeJ039NvlbiSrLdDkkW9lmzgTsZALyuZC9KAVp4kXnKboNNILN6lHZAM5II3KsZB3pZAhrA1tQcMstmUZBM6S8n7vbskFzJIsezkZCEAiY9z3bZAapk4gvaAScrESIrwtnCALKC6hfIlNmhLOuImZBKR7qRY8uh9og1YHHdNTqVdmR7ewLxoVmuLhmNKL30owZDZD';
+  const accessToken = 'EAAQIZAsEDpooBOZB2vdGnU44o8OT2OVvgo2JZAMjOYcZBtn159n1MGHiDspeRuwualBPq4BXiZCi541IItfhZCZAczYNXNfuXoN30p8SEf3ZAS02ZC1dv3MIXVltfo3W5eTi1hKCAPBjkZBYoEpA0TaU4rxGI1UiAjZBqS58YnCRQqijqEaNrWiI7fATgOYTd1GHgeg68PLBAxsBVgaCljdRiknl7OFDE4f57xhTJMZD';
   const igAccountId = '17841460045847884';
 
   const fetchInsightsData = async () => {
