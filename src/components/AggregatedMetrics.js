@@ -74,12 +74,9 @@ const MediaData = () => {
               <source src={media.media_url} type="video/mp4" />
             </video>
           )}
-          <p>💬 Yorumlar: {media.comments_count}</p>
-          <p>❤️ Beğeniler: {media.like_count}</p>
-          <p>👀 Görülme Sayısı (Reach): {media.reach}</p>
-          <a href={media.permalink} target="_blank" rel="noopener noreferrer">
-            Gönderiyi Görüntüle
-          </a>
+          <p>Yorumlar: {media.comments_count}</p>
+          <p>Beğeniler: {media.like_count}</p>
+          <p>Görülme Sayısı (Reach): {media.reach}</p>
         </div>
       ))}
     </div>
