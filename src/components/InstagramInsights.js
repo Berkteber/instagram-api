@@ -6,7 +6,7 @@ const InstagramInsights = () => {
   const [prevData, setPrevData] = useState(null);
   const [error, setError] = useState(null);
 
-  const accessToken = 'EAAQIZAsEDpooBOZB2vdGnU44o8OT2OVvgo2JZAMjOYcZBtn159n1MGHiDspeRuwualBPq4BXiZCi541IItfhZCZAczYNXNfuXoN30p8SEf3ZAS02ZC1dv3MIXVltfo3W5eTi1hKCAPBjkZBYoEpA0TaU4rxGI1UiAjZBqS58YnCRQqijqEaNrWiI7fATgOYTd1GHgeg68PLBAxsBVgaCljdRiknl7OFDE4f57xhTJMZD';
+  const accessToken = 'EAAQIZAsEDpooBO8ggFFAL6rZC8k7f303Dj3ZCqssfsAeZAOCaq4yumMBBzKqOocWCWWwajGRl7AHASGiBLWyZBXgyy1sbvRFfUcd6oBeQ0gbkTdCpmW9W9ZClueCU4W2hDZCVvgH5S9ZAgkKKGdmcAZB2pG382eJTXKX36dMuYYGc5SEkM23FuvHSm086NYdXiuaZBnHFXxSjZCodpiocc5ZB8nkbz1WhwZDZD';
   const igAccountId = '17841460045847884';
 
   // Bugünkü verileri çekmek için period parametresi eklenmiş örnek istek
